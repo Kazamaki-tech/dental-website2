@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
-  ArrowLeft, ArrowRight, Check, Download, FileText, Plus, Trash2,
+  ArrowLeft, ArrowRight, Download, FileText, Plus, Trash2,
   Sparkles, Code, Briefcase, Palette, Stethoscope, Layers, RotateCcw, FileType2,
 } from "lucide-react";
 import { useResume } from "@/lib/use-resume";
