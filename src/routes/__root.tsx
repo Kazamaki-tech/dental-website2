@@ -72,13 +72,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Resumely — Beautiful Resume Templates Built for You" },
-      { name: "description", content: "Build a stylish, professional resume in minutes. Six template styles tailored for tech, business, creative, and healthcare. Export as PDF or DOCX." },
-      { property: "og:title", content: "Resumely — Beautiful Resume Templates" },
+      { title: "Resume Templates — Build a Modern Resume in Minutes" },
+      { name: "description", content: "Build a stylish, professional resume in minutes. Multiple template styles and color themes. Export as PDF or DOCX." },
+      { property: "og:title", content: "Resume Templates — Modern Resume Builder" },
       { property: "og:description", content: "Build a stylish, professional resume in minutes. Export as PDF or DOCX." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Resumely" },
+      { name: "twitter:title", content: "Resume Templates" },
       { name: "twitter:description", content: "Build a stylish, professional resume in minutes." },
     ],
     links: [
