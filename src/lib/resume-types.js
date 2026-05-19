@@ -1,0 +1,73 @@
+export const emptyResume = () => ({
+  profession: "tech",
+  template: "classic",
+  accentColor: "#2d4a6e",
+  fullName: "",
+  jobTitle: "",
+  email: "",
+  phone: "",
+  location: "",
+  website: "",
+  linkedin: "",
+  summary: "",
+  skills: [],
+  experience: [],
+  education: [],
+  projects: [],
+  certifications: [],
+  languages: [],
+});
+
+export const sampleResume = () => ({
+  ...emptyResume(),
+  fullName: "Emma Larsen",
+  jobTitle: "Senior Product Designer",
+  email: "emma@mail.com",
+  phone: "555.555.5555",
+  location: "San Diego, CA",
+  linkedin: "linkedin.com/in/emma-larsen",
+  website: "emmalarsen.design",
+  summary:
+    "Multi-faceted product designer with 8+ years shipping consumer and enterprise software. Expertise in design systems, research, and cross-functional leadership.",
+  skills: ["Figma", "Design Systems", "User Research", "Prototyping", "Strategy", "Leadership"],
+  experience: [
+    {
+      id: "1",
+      title: "Senior Product Designer",
+      company: "Northstar Labs",
+      location: "Remote",
+      startDate: "2022",
+      endDate: "Present",
+      bullets: [
+        "Led redesign of flagship dashboard, lifting weekly active usage 38%.",
+        "Built and maintained a 200+ component design system across 4 product teams.",
+        "Mentored 3 mid-level designers through structured critique and growth plans.",
+      ],
+    },
+    {
+      id: "2",
+      title: "Product Designer",
+      company: "Bright Studio",
+      location: "San Diego, CA",
+      startDate: "2019",
+      endDate: "2022",
+      bullets: [
+        "Designed onboarding flow that improved activation by 24%.",
+        "Partnered with engineering to ship 12 major releases on schedule.",
+      ],
+    },
+  ],
+  education: [
+    {
+      id: "1",
+      degree: "B.A. Visual Communication",
+      school: "UC San Diego",
+      location: "San Diego, CA",
+      date: "2015 – 2019",
+      notes: "Summa cum laude",
+    },
+  ],
+  projects: [],
+  certifications: ["NN/g UX Certification"],
+  languages: ["English", "Spanish"],
+});
