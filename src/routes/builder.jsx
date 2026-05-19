@@ -1,0 +1,281 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import {
+  ArrowLeft, ArrowRight, Download, FileText, Plus, Trash2,
+  Sparkles, Code, Briefcase, Palette, Stethoscope, RotateCcw, FileType2,
+} from "lucide-react";
+import { useResume } from "@/lib/use-resume";
+import { sampleResume } from "@/lib/resume-types";
+import { ResumeTemplate, templateMeta } from "@/components/resume-templates";
+import { exportPdf, exportDocx } from "@/lib/resume-export";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+
+export const Route = createFileRoute("/builder")({
+  head: () => ({
+    meta: [
+      { title: "Build your resume — Resume Templates" },
+      { name: "description", content: "Answer guided questions, pick a template, and export your resume as PDF or DOCX." },
+    ],
+  }),
+  component: Builder,
+});
+
+const PROFESSIONS = [
+  { id: "tech", label: "Tech & Engineering", icon: Code, hint: "Emphasize stack, impact, projects" },
+  { id: "business", label: "Business & Finance", icon: Briefcase, hint: "Lead with metrics and outcomes" },
+  { id: "creative", label: "Creative & Design", icon: Palette, hint: "Show range and visual taste" },
+  { id: "healthcare", label: "Healthcare & Science", icon: Stethoscope, hint: "Highlight credentials & care" },
+];
+
+const ACCENTS = ["#2d4a6e", "#0f766e", "#9333ea", "#dc2626", "#ea580c", "#1f2937", "#0ea5e9"];
+
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+const STEPS = ["Profession", "Personal", "Summary & Skills", "Experience", "Education", "Extras", "Template", "Export"];
+
+function Builder() {
+  const { data, setData, update, reset } = useResume();
+  const [step, setStep] = useState(0);
+  const previewRef = useRef(null);
+  const [exporting, setExporting] = useState("");
+
+  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const prev = () => setStep((s) => Math.max(s - 1, 0));
+  const gotoStep = (i) => setStep(i);
+
+  const addExp = () => update("experience", [...data.experience, { id: uid(), title: "", company: "", location: "", startDate: "", endDate: "", bullets: [""] }]);
+  const addEdu = () => update("education", [...data.education, { id: uid(), degree: "", school: "", location: "", date: "", notes: "" }]);
+  const addProject = () => update("projects", [...data.projects, { id: uid(), name: "", description: "", link: "" }]);
+
+  const handlePdf = async () => {
+    if (!previewRef.current) return;
+    setExporting("pdf");
+    try { await exportPdf(previewRef.current, `${data.fullName || "resume"}.pdf`); }
+    finally { setExporting(""); }
+  };
+  const handleDocx = async () => {
+    setExporting("docx");
+    try { await exportDocx(data, `${data.fullName || "resume"}.docx`); }
+    finally { setExporting(""); }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-40">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 font-serif text-lg">
+            <FileText className="h-4 w-4 text-primary" />
+            Resume Templates
+          </Link>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setData(sampleResume())}>
+              <Sparkles className="h-3.5 w-3.5 mr-1" /> Sample
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => { if (confirm("Clear all your resume data?")) reset(); }}>
+              <RotateCcw className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[480px_1fr] gap-6 p-4 sm:p-6">
+        <div className="bg-card rounded-2xl border border-border/60 p-7 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+          <div className="flex items-center gap-1 mb-6 text-xs">
+            {STEPS.map((s, i) => (
+              <button key={s} onClick={() => gotoStep(i)} className={`flex-1 h-1 rounded-full transition ${i <= step ? "bg-primary" : "bg-muted"}`} title={s} />
+            ))}
+          </div>
+          <div className="text-xs text-muted-foreground mb-1 tracking-wide uppercase">Step {step + 1} of {STEPS.length}</div>
+          <h2 className="font-serif text-3xl mb-5 tracking-tight">{STEPS[step]}</h2>
+
+          {step === 0 && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Pick your field so we can tailor wording and template suggestions.</p>
+              {PROFESSIONS.map((p) => (
+                <button key={p.id} onClick={() => update("profession", p.id)}
+                  className={`w-full flex items-start gap-3 text-left p-3 rounded-lg border transition ${data.profession === p.id ? "border-primary bg-primary/5" : "border-border hover:bg-secondary"}`}>
+                  <p.icon className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <div className="font-medium">{p.label}</div>
+                    <div className="text-xs text-muted-foreground">{p.hint}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="space-y-3">
+              <Field label="Full name"><Input value={data.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Emma Larsen" /></Field>
+              <Field label="Job title"><Input value={data.jobTitle} onChange={(e) => update("jobTitle", e.target.value)} placeholder="Senior Product Designer" /></Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Email"><Input value={data.email} onChange={(e) => update("email", e.target.value)} placeholder="you@mail.com" /></Field>
+                <Field label="Phone"><Input value={data.phone} onChange={(e) => update("phone", e.target.value)} placeholder="555.555.5555" /></Field>
+              </div>
+              <Field label="Location"><Input value={data.location} onChange={(e) => update("location", e.target.value)} placeholder="San Diego, CA" /></Field>
+              <Field label="LinkedIn"><Input value={data.linkedin} onChange={(e) => update("linkedin", e.target.value)} placeholder="linkedin.com/in/you" /></Field>
+              <Field label="Website / Portfolio"><Input value={data.website} onChange={(e) => update("website", e.target.value)} placeholder="yoursite.com" /></Field>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-3">
+              <Field label="Professional summary">
+                <Textarea rows={5} value={data.summary} onChange={(e) => update("summary", e.target.value)}
+                  placeholder="2–3 sentences about your strengths, expertise and the value you bring." />
+              </Field>
+              <Field label="Skills (comma-separated)">
+                <Textarea rows={3} value={data.skills.join(", ")}
+                  onChange={(e) => update("skills", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
+                  placeholder="Figma, React, Leadership, Strategy" />
+              </Field>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              {data.experience.map((e, idx) => (
+                <div key={e.id} className="border border-border rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs font-semibold text-muted-foreground">EXPERIENCE #{idx + 1}</div>
+                    <button onClick={() => update("experience", data.experience.filter((x) => x.id !== e.id))} className="text-destructive hover:opacity-70"><Trash2 className="h-4 w-4" /></button>
+                  </div>
+                  <Input placeholder="Job title" value={e.title} onChange={(ev) => update("experience", data.experience.map((x) => x.id === e.id ? { ...x, title: ev.target.value } : x))} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="Company" value={e.company} onChange={(ev) => update("experience", data.experience.map((x) => x.id === e.id ? { ...x, company: ev.target.value } : x))} />
+                    <Input placeholder="Location" value={e.location} onChange={(ev) => update("experience", data.experience.map((x) => x.id === e.id ? { ...x, location: ev.target.value } : x))} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="Start (e.g. 2022)" value={e.startDate} onChange={(ev) => update("experience", data.experience.map((x) => x.id === e.id ? { ...x, startDate: ev.target.value } : x))} />
+                    <Input placeholder="End (e.g. Present)" value={e.endDate} onChange={(ev) => update("experience", data.experience.map((x) => x.id === e.id ? { ...x, endDate: ev.target.value } : x))} />
+                  </div>
+                  <Textarea rows={4} placeholder="Bullets — one per line"
+                    value={e.bullets.join("\n")}
+                    onChange={(ev) => update("experience", data.experience.map((x) => x.id === e.id ? { ...x, bullets: ev.target.value.split("\n") } : x))} />
+                </div>
+              ))}
+              <Button variant="outline" onClick={addExp} className="w-full"><Plus className="h-4 w-4 mr-1" /> Add experience</Button>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-4">
+              {data.education.map((ed, idx) => (
+                <div key={ed.id} className="border border-border rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs font-semibold text-muted-foreground">EDUCATION #{idx + 1}</div>
+                    <button onClick={() => update("education", data.education.filter((x) => x.id !== ed.id))} className="text-destructive hover:opacity-70"><Trash2 className="h-4 w-4" /></button>
+                  </div>
+                  <Input placeholder="Degree" value={ed.degree} onChange={(ev) => update("education", data.education.map((x) => x.id === ed.id ? { ...x, degree: ev.target.value } : x))} />
+                  <Input placeholder="School" value={ed.school} onChange={(ev) => update("education", data.education.map((x) => x.id === ed.id ? { ...x, school: ev.target.value } : x))} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="Location" value={ed.location} onChange={(ev) => update("education", data.education.map((x) => x.id === ed.id ? { ...x, location: ev.target.value } : x))} />
+                    <Input placeholder="Date (e.g. 2019)" value={ed.date} onChange={(ev) => update("education", data.education.map((x) => x.id === ed.id ? { ...x, date: ev.target.value } : x))} />
+                  </div>
+                  <Input placeholder="Notes (honors, GPA…)" value={ed.notes} onChange={(ev) => update("education", data.education.map((x) => x.id === ed.id ? { ...x, notes: ev.target.value } : x))} />
+                </div>
+              ))}
+              <Button variant="outline" onClick={addEdu} className="w-full"><Plus className="h-4 w-4 mr-1" /> Add education</Button>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="space-y-4">
+              <Field label="Certifications (one per line)">
+                <Textarea rows={3} value={data.certifications.join("\n")}
+                  onChange={(e) => update("certifications", e.target.value.split("\n").map((s) => s.trim()).filter(Boolean))} />
+              </Field>
+              <Field label="Languages (comma-separated)">
+                <Input value={data.languages.join(", ")}
+                  onChange={(e) => update("languages", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))} />
+              </Field>
+              <div className="space-y-3">
+                <div className="text-sm font-semibold">Projects</div>
+                {data.projects.map((p, idx) => (
+                  <div key={p.id} className="border border-border rounded-lg p-3 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs font-semibold text-muted-foreground">PROJECT #{idx + 1}</div>
+                      <button onClick={() => update("projects", data.projects.filter((x) => x.id !== p.id))} className="text-destructive hover:opacity-70"><Trash2 className="h-4 w-4" /></button>
+                    </div>
+                    <Input placeholder="Name" value={p.name} onChange={(e) => update("projects", data.projects.map((x) => x.id === p.id ? { ...x, name: e.target.value } : x))} />
+                    <Input placeholder="Link" value={p.link} onChange={(e) => update("projects", data.projects.map((x) => x.id === p.id ? { ...x, link: e.target.value } : x))} />
+                    <Textarea rows={2} placeholder="Description" value={p.description} onChange={(e) => update("projects", data.projects.map((x) => x.id === p.id ? { ...x, description: e.target.value } : x))} />
+                  </div>
+                ))}
+                <Button variant="outline" onClick={addProject} className="w-full"><Plus className="h-4 w-4 mr-1" /> Add project</Button>
+              </div>
+            </div>
+          )}
+
+          {step === 6 && (
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm font-medium mb-2">Template style</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {templateMeta.map((t) => (
+                    <button key={t.id} onClick={() => update("template", t.id)}
+                      className={`text-left p-3 rounded-lg border transition ${data.template === t.id ? "border-primary bg-primary/5" : "border-border hover:bg-secondary"}`}>
+                      <div className="font-semibold">{t.name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{t.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-medium mb-2">Accent color</div>
+                <div className="flex flex-wrap gap-2">
+                  {ACCENTS.map((c) => (
+                    <button key={c} onClick={() => update("accentColor", c)}
+                      className={`h-9 w-9 rounded-full border-2 ${data.accentColor === c ? "border-foreground" : "border-transparent"}`}
+                      style={{ background: c }} aria-label={c} />
+                  ))}
+                  <input type="color" value={data.accentColor} onChange={(e) => update("accentColor", e.target.value)}
+                    className="h-9 w-9 rounded-full overflow-hidden cursor-pointer border border-border" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 7 && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Download your resume in either format. PDF preserves the design exactly; DOCX is editable in Word.</p>
+              <Button onClick={handlePdf} disabled={!!exporting} className="w-full">
+                <Download className="h-4 w-4 mr-2" /> {exporting === "pdf" ? "Generating PDF…" : "Download PDF"}
+              </Button>
+              <Button onClick={handleDocx} disabled={!!exporting} variant="outline" className="w-full">
+                <FileType2 className="h-4 w-4 mr-2" /> {exporting === "docx" ? "Generating DOCX…" : "Download DOCX"}
+              </Button>
+            </div>
+          )}
+
+          <div className="flex justify-between mt-6 pt-4 border-t border-border">
+            <Button variant="outline" onClick={prev} disabled={step === 0}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
+            {step < STEPS.length - 1
+              ? <Button onClick={next}>Next <ArrowRight className="h-4 w-4 ml-1" /></Button>
+              : <Button onClick={handlePdf} disabled={!!exporting}><Download className="h-4 w-4 mr-1" /> Export PDF</Button>}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <div className="text-xs text-muted-foreground mb-2 text-center">Live preview · {templateMeta.find(t => t.id === data.template)?.name}</div>
+          <div className="flex justify-center origin-top" style={{ transform: "scale(var(--preview-scale,1))" }}>
+            <div ref={previewRef}>
+              <ResumeTemplate data={data} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="mt-1">{children}</div>
+    </label>
+  );
+}
