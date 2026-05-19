@@ -115,9 +115,8 @@ function Builder() {
             <FileText className="h-5 w-5 text-primary" />
             Resume Templates
           </Link>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Check className="h-3.5 w-3.5 text-green-600" /> Auto-saved
-          </div>
+          <div />
+
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setData(sampleResume())}>
               <Sparkles className="h-3.5 w-3.5 mr-1" /> Sample
