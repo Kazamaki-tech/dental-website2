@@ -108,21 +108,18 @@ function Builder() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <header className="border-b border-border bg-white sticky top-0 z-40">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-40">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
-            <FileText className="h-5 w-5 text-primary" />
+          <Link to="/" className="flex items-center gap-2 font-serif text-lg">
+            <FileText className="h-4 w-4 text-primary" />
             Resume Templates
           </Link>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Check className="h-3.5 w-3.5 text-green-600" /> Auto-saved
-          </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setData(sampleResume())}>
+            <Button size="sm" variant="ghost" onClick={() => setData(sampleResume())}>
               <Sparkles className="h-3.5 w-3.5 mr-1" /> Sample
             </Button>
-            <Button size="sm" variant="outline" onClick={() => { if (confirm("Clear all your resume data?")) reset(); }}>
+            <Button size="sm" variant="ghost" onClick={() => { if (confirm("Clear all your resume data?")) reset(); }}>
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -131,15 +128,14 @@ function Builder() {
 
       <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[480px_1fr] gap-6 p-4 sm:p-6">
         {/* LEFT — Wizard */}
-        <div className="bg-white rounded-xl border border-border p-6 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
-          {/* Steps */}
+        <div className="bg-card rounded-2xl border border-border/60 p-7 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
           <div className="flex items-center gap-1 mb-6 text-xs">
             {STEPS.map((s, i) => (
-              <button key={s} onClick={() => gotoStep(i)} className={`flex-1 h-1.5 rounded-full transition ${i <= step ? "bg-primary" : "bg-muted"}`} title={s} />
+              <button key={s} onClick={() => gotoStep(i)} className={`flex-1 h-1 rounded-full transition ${i <= step ? "bg-primary" : "bg-muted"}`} title={s} />
             ))}
           </div>
-          <div className="text-xs text-muted-foreground mb-1">Step {step + 1} of {STEPS.length}</div>
-          <h2 className="font-display text-2xl font-bold mb-4">{STEPS[step]}</h2>
+          <div className="text-xs text-muted-foreground mb-1 tracking-wide uppercase">Step {step + 1} of {STEPS.length}</div>
+          <h2 className="font-serif text-3xl mb-5 tracking-tight">{STEPS[step]}</h2>
 
           {step === 0 && (
             <div className="space-y-3">
