@@ -113,7 +113,7 @@ function Builder() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
             <FileText className="h-5 w-5 text-primary" />
-            Resumely
+            Resume Templates
           </Link>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Check className="h-3.5 w-3.5 text-green-600" /> Auto-saved
