@@ -2,10 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ArrowLeft, ArrowRight, Download, FileText, Plus, Trash2,
-  Sparkles, Code, Briefcase, Palette, Stethoscope, Layers, RotateCcw, FileType2,
+  Sparkles, Code, Briefcase, Palette, Stethoscope, RotateCcw, FileType2,
 } from "lucide-react";
 import { useResume } from "@/lib/use-resume";
-import { sampleResume, type Profession, type TemplateId, type Experience, type Education, type Project } from "@/lib/resume-types";
+import { sampleResume } from "@/lib/resume-types";
 import { ResumeTemplate, templateMeta } from "@/components/resume-templates";
 import { exportPdf, exportDocx } from "@/lib/resume-export";
 import { Input } from "@/components/ui/input";
@@ -22,78 +22,32 @@ export const Route = createFileRoute("/builder")({
   component: Builder,
 });
 
-const PROFESSIONS: { id: Profession; label: string; icon: typeof Code; hint: string }[] = [
+const PROFESSIONS = [
   { id: "tech", label: "Tech & Engineering", icon: Code, hint: "Emphasize stack, impact, projects" },
   { id: "business", label: "Business & Finance", icon: Briefcase, hint: "Lead with metrics and outcomes" },
   { id: "creative", label: "Creative & Design", icon: Palette, hint: "Show range and visual taste" },
   { id: "healthcare", label: "Healthcare & Science", icon: Stethoscope, hint: "Highlight credentials & care" },
-  { id: "general", label: "General / Other", icon: Layers, hint: "Balanced, all-purpose layout" },
 ];
 
 const ACCENTS = ["#2d4a6e", "#0f766e", "#9333ea", "#dc2626", "#ea580c", "#1f2937", "#0ea5e9"];
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-const STEPS = ["Profession", "Personal", "Summary & Skills", "Experience", "Education", "Extras", "Template", "Export"] as const;
+const STEPS = ["Profession", "Personal", "Summary & Skills", "Experience", "Education", "Extras", "Template", "Export"];
 
 function Builder() {
-  const { data, setData, update, reset, loaded } = useResume();
+  const { data, setData, update, reset } = useResume();
   const [step, setStep] = useState(0);
-  const [error, setError] = useState<string>("");
-  const previewRef = useRef<HTMLDivElement>(null);
-  const [exporting, setExporting] = useState<"" | "pdf" | "docx">("");
+  const previewRef = useRef(null);
+  const [exporting, setExporting] = useState("");
 
-  if (!loaded) return null;
+  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const prev = () => setStep((s) => Math.max(s - 1, 0));
+  const gotoStep = (i) => setStep(i);
 
-  const validateStep = (s: number): string => {
-    if (s === 0 && !data.profession) return "Please pick a profession to continue.";
-    if (s === 1) {
-      if (!data.fullName.trim()) return "Full name is required.";
-      if (!data.jobTitle.trim()) return "Job title is required.";
-      if (!data.email.trim()) return "Email is required.";
-      if (!/^\S+@\S+\.\S+$/.test(data.email)) return "Please enter a valid email.";
-      if (!data.phone.trim()) return "Phone is required.";
-      if (!data.location.trim()) return "Location is required.";
-    }
-    if (s === 2) {
-      if (!data.summary.trim() || data.summary.trim().length < 20) return "Write a short summary (at least 20 characters).";
-      if (data.skills.length < 3) return "Add at least 3 skills.";
-    }
-    if (s === 3) {
-      if (data.experience.length === 0) return "Add at least one experience entry.";
-      const bad = data.experience.find((e) => !e.title.trim() || !e.company.trim() || !e.startDate.trim() || !e.endDate.trim() || e.bullets.filter((b) => b.trim()).length === 0);
-      if (bad) return "Each experience needs title, company, dates and at least one bullet.";
-    }
-    if (s === 4) {
-      if (data.education.length === 0) return "Add at least one education entry.";
-      const bad = data.education.find((e) => !e.degree.trim() || !e.school.trim());
-      if (bad) return "Each education entry needs a degree and school.";
-    }
-    return "";
-  };
-
-  const next = () => {
-    const err = validateStep(step);
-    if (err) { setError(err); return; }
-    setError("");
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
-  };
-  const prev = () => { setError(""); setStep((s) => Math.max(s - 1, 0)); };
-
-  const gotoStep = (i: number) => {
-    if (i <= step) { setError(""); setStep(i); return; }
-    // forward jump: validate each step up to target
-    for (let s = step; s < i; s++) {
-      const err = validateStep(s);
-      if (err) { setError(err); setStep(s); return; }
-    }
-    setError("");
-    setStep(i);
-  };
-
-  const addExp = () => update("experience", [...data.experience, { id: uid(), title: "", company: "", location: "", startDate: "", endDate: "", bullets: [""] } as Experience]);
-  const addEdu = () => update("education", [...data.education, { id: uid(), degree: "", school: "", location: "", date: "", notes: "" } as Education]);
-  const addProject = () => update("projects", [...data.projects, { id: uid(), name: "", description: "", link: "" } as Project]);
+  const addExp = () => update("experience", [...data.experience, { id: uid(), title: "", company: "", location: "", startDate: "", endDate: "", bullets: [""] }]);
+  const addEdu = () => update("education", [...data.education, { id: uid(), degree: "", school: "", location: "", date: "", notes: "" }]);
+  const addProject = () => update("projects", [...data.projects, { id: uid(), name: "", description: "", link: "" }]);
 
   const handlePdf = async () => {
     if (!previewRef.current) return;
@@ -127,7 +81,6 @@ function Builder() {
       </header>
 
       <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[480px_1fr] gap-6 p-4 sm:p-6">
-        {/* LEFT — Wizard */}
         <div className="bg-card rounded-2xl border border-border/60 p-7 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
           <div className="flex items-center gap-1 mb-6 text-xs">
             {STEPS.map((s, i) => (
@@ -262,7 +215,7 @@ function Builder() {
                 <div className="text-sm font-medium mb-2">Template style</div>
                 <div className="grid grid-cols-2 gap-2">
                   {templateMeta.map((t) => (
-                    <button key={t.id} onClick={() => update("template", t.id as TemplateId)}
+                    <button key={t.id} onClick={() => update("template", t.id)}
                       className={`text-left p-3 rounded-lg border transition ${data.template === t.id ? "border-primary bg-primary/5" : "border-border hover:bg-secondary"}`}>
                       <div className="font-semibold">{t.name}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">{t.desc}</div>
@@ -294,15 +247,6 @@ function Builder() {
               <Button onClick={handleDocx} disabled={!!exporting} variant="outline" className="w-full">
                 <FileType2 className="h-4 w-4 mr-2" /> {exporting === "docx" ? "Generating DOCX…" : "Download DOCX"}
               </Button>
-              <div className="text-xs text-muted-foreground text-center pt-2">
-                Your data stays in this browser. Clearing site data will delete it.
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 text-destructive text-sm px-3 py-2">
-              {error}
             </div>
           )}
 
@@ -314,7 +258,6 @@ function Builder() {
           </div>
         </div>
 
-        {/* RIGHT — Preview */}
         <div className="overflow-x-auto">
           <div className="text-xs text-muted-foreground mb-2 text-center">Live preview · {templateMeta.find(t => t.id === data.template)?.name}</div>
           <div className="flex justify-center origin-top" style={{ transform: "scale(var(--preview-scale,1))" }}>
@@ -328,7 +271,7 @@ function Builder() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }) {
   return (
     <label className="block">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>

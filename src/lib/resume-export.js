@@ -4,9 +4,8 @@ import { saveAs } from "file-saver";
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
 } from "docx";
-import type { ResumeData } from "./resume-types";
 
-export async function exportPdf(node: HTMLElement, filename = "resume.pdf") {
+export async function exportPdf(node, filename = "resume.pdf") {
   const canvas = await html2canvas(node, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
   const img = canvas.toDataURL("image/png");
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
@@ -17,7 +16,6 @@ export async function exportPdf(node: HTMLElement, filename = "resume.pdf") {
   if (imgH <= pageH) {
     pdf.addImage(img, "PNG", 0, 0, pageW, imgH);
   } else {
-    // multi-page slicing
     let remaining = canvas.height;
     let offset = 0;
     const pageCanvasH = (canvas.width * pageH) / pageW;
@@ -25,7 +23,7 @@ export async function exportPdf(node: HTMLElement, filename = "resume.pdf") {
       const slice = document.createElement("canvas");
       slice.width = canvas.width;
       slice.height = Math.min(pageCanvasH, remaining);
-      const ctx = slice.getContext("2d")!;
+      const ctx = slice.getContext("2d");
       ctx.fillStyle = "#fff";
       ctx.fillRect(0, 0, slice.width, slice.height);
       ctx.drawImage(canvas, 0, -offset);
@@ -38,27 +36,27 @@ export async function exportPdf(node: HTMLElement, filename = "resume.pdf") {
   pdf.save(filename);
 }
 
-export async function exportDocx(data: ResumeData, filename = "resume.docx") {
-  const h = (text: string) =>
+export async function exportDocx(data, filename = "resume.docx") {
+  const h = (text) =>
     new Paragraph({
       heading: HeadingLevel.HEADING_2,
       spacing: { before: 240, after: 120 },
       children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24 })],
     });
 
-  const p = (text: string, opts: { bold?: boolean; italic?: boolean; size?: number } = {}) =>
+  const p = (text, opts = {}) =>
     new Paragraph({
       spacing: { after: 80 },
       children: [new TextRun({ text, bold: opts.bold, italics: opts.italic, size: opts.size ?? 22 })],
     });
 
-  const bullet = (text: string) =>
+  const bullet = (text) =>
     new Paragraph({
       bullet: { level: 0 },
       children: [new TextRun({ text, size: 22 })],
     });
 
-  const children: Paragraph[] = [
+  const children = [
     new Paragraph({
       alignment: AlignmentType.CENTER,
       children: [new TextRun({ text: data.fullName || "Your Name", bold: true, size: 44 })],
@@ -78,7 +76,6 @@ export async function exportDocx(data: ResumeData, filename = "resume.docx") {
   ];
 
   if (data.summary) { children.push(h("Professional Summary"), p(data.summary)); }
-
   if (data.skills.length) { children.push(h("Skills"), p(data.skills.join(" • "))); }
 
   if (data.experience.length) {

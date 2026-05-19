@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { type ResumeData, emptyResume } from "./resume-types";
+import { emptyResume } from "./resume-types";
 
 export function useResume() {
-  const [data, setData] = useState<ResumeData>(() => emptyResume());
+  const [data, setData] = useState(() => emptyResume());
 
-  const update = <K extends keyof ResumeData>(key: K, value: ResumeData[K]) =>
+  const update = (key, value) =>
     setData((d) => ({ ...d, [key]: value }));
 
   const reset = () => setData(emptyResume());

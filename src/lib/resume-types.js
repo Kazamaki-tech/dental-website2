@@ -1,66 +1,5 @@
-export type Profession =
-  | "tech"
-  | "business"
-  | "creative"
-  | "healthcare"
-  | "general";
-
-export type TemplateId =
-  | "classic"
-  | "modern"
-  | "executive"
-  | "creative"
-  | "minimal"
-  | "tech";
-
-export interface Experience {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-  bullets: string[];
-}
-
-export interface Education {
-  id: string;
-  degree: string;
-  school: string;
-  location: string;
-  date: string;
-  notes: string;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  link: string;
-}
-
-export interface ResumeData {
-  profession: Profession;
-  template: TemplateId;
-  accentColor: string;
-  fullName: string;
-  jobTitle: string;
-  email: string;
-  phone: string;
-  location: string;
-  website: string;
-  linkedin: string;
-  summary: string;
-  skills: string[];
-  experience: Experience[];
-  education: Education[];
-  projects: Project[];
-  certifications: string[];
-  languages: string[];
-}
-
-export const emptyResume = (): ResumeData => ({
-  profession: "general",
+export const emptyResume = () => ({
+  profession: "tech",
   template: "classic",
   accentColor: "#2d4a6e",
   fullName: "",
@@ -79,7 +18,7 @@ export const emptyResume = (): ResumeData => ({
   languages: [],
 });
 
-export const sampleResume = (): ResumeData => ({
+export const sampleResume = () => ({
   ...emptyResume(),
   fullName: "Emma Larsen",
   jobTitle: "Senior Product Designer",
