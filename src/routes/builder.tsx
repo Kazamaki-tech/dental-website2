@@ -135,7 +135,7 @@ function Builder() {
           {/* Steps */}
           <div className="flex items-center gap-1 mb-6 text-xs">
             {STEPS.map((s, i) => (
-              <button key={s} onClick={() => setStep(i)} className={`flex-1 h-1.5 rounded-full transition ${i <= step ? "bg-primary" : "bg-muted"}`} title={s} />
+              <button key={s} onClick={() => gotoStep(i)} className={`flex-1 h-1.5 rounded-full transition ${i <= step ? "bg-primary" : "bg-muted"}`} title={s} />
             ))}
           </div>
           <div className="text-xs text-muted-foreground mb-1">Step {step + 1} of {STEPS.length}</div>
