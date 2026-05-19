@@ -304,6 +304,12 @@ function Builder() {
             </div>
           )}
 
+          {error && (
+            <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 text-destructive text-sm px-3 py-2">
+              {error}
+            </div>
+          )}
+
           <div className="flex justify-between mt-6 pt-4 border-t border-border">
             <Button variant="outline" onClick={prev} disabled={step === 0}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
             {step < STEPS.length - 1
