@@ -39,13 +39,57 @@ const STEPS = ["Profession", "Personal", "Summary & Skills", "Experience", "Educ
 function Builder() {
   const { data, setData, update, reset, loaded } = useResume();
   const [step, setStep] = useState(0);
+  const [error, setError] = useState<string>("");
   const previewRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState<"" | "pdf" | "docx">("");
 
   if (!loaded) return null;
 
-  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
-  const prev = () => setStep((s) => Math.max(s - 1, 0));
+  const validateStep = (s: number): string => {
+    if (s === 0 && !data.profession) return "Please pick a profession to continue.";
+    if (s === 1) {
+      if (!data.fullName.trim()) return "Full name is required.";
+      if (!data.jobTitle.trim()) return "Job title is required.";
+      if (!data.email.trim()) return "Email is required.";
+      if (!/^\S+@\S+\.\S+$/.test(data.email)) return "Please enter a valid email.";
+      if (!data.phone.trim()) return "Phone is required.";
+      if (!data.location.trim()) return "Location is required.";
+    }
+    if (s === 2) {
+      if (!data.summary.trim() || data.summary.trim().length < 20) return "Write a short summary (at least 20 characters).";
+      if (data.skills.length < 3) return "Add at least 3 skills.";
+    }
+    if (s === 3) {
+      if (data.experience.length === 0) return "Add at least one experience entry.";
+      const bad = data.experience.find((e) => !e.title.trim() || !e.company.trim() || !e.startDate.trim() || !e.endDate.trim() || e.bullets.filter((b) => b.trim()).length === 0);
+      if (bad) return "Each experience needs title, company, dates and at least one bullet.";
+    }
+    if (s === 4) {
+      if (data.education.length === 0) return "Add at least one education entry.";
+      const bad = data.education.find((e) => !e.degree.trim() || !e.school.trim());
+      if (bad) return "Each education entry needs a degree and school.";
+    }
+    return "";
+  };
+
+  const next = () => {
+    const err = validateStep(step);
+    if (err) { setError(err); return; }
+    setError("");
+    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  };
+  const prev = () => { setError(""); setStep((s) => Math.max(s - 1, 0)); };
+
+  const gotoStep = (i: number) => {
+    if (i <= step) { setError(""); setStep(i); return; }
+    // forward jump: validate each step up to target
+    for (let s = step; s < i; s++) {
+      const err = validateStep(s);
+      if (err) { setError(err); setStep(s); return; }
+    }
+    setError("");
+    setStep(i);
+  };
 
   const addExp = () => update("experience", [...data.experience, { id: uid(), title: "", company: "", location: "", startDate: "", endDate: "", bullets: [""] } as Experience]);
   const addEdu = () => update("education", [...data.education, { id: uid(), degree: "", school: "", location: "", date: "", notes: "" } as Education]);
