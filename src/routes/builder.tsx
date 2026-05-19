@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/builder")({
   head: () => ({
     meta: [
-      { title: "Build your resume — Resumely" },
+      { title: "Build your resume — Resume Templates" },
       { name: "description", content: "Answer guided questions, pick a template, and export your resume as PDF or DOCX." },
     ],
   }),
